@@ -1,13 +1,29 @@
 import pandas as pd
+from typing import Union
 #  herramienta de visualización de datos geoespaciales en Python
-import geopandas as gpd
 import plotly.express as px
 import plotly.graph_objects as go
-
+# parametros globales
 from params import *
 
 
-def obtain_growth_rates(dataframe):
+def obtain_growth_rates(dataframe: pd.DataFrame) -> dict:
+    """
+    Calculates the average growth rates of renewable energy consumption for different continents.
+
+    Parameters
+    ----------
+    dataframe : pd.DataFrame
+        A pandas DataFrame containing data on renewable energy consumption, with a column named 'Entity' 
+        specifying the continents and a column named 'Renewables (% equivalent primary energy)' containing 
+        the percentage of renewable energy consumption.
+
+    Returns
+    -------
+    dict
+        A dictionary where the keys are continent names and the values are the average growth rates of 
+        renewable energy consumption (in percentage) for each continent.
+    """
     continents = ['Africa', 'Europe', 'South America', 'North America', 'Oceania', 'Asia']
 
     growth_rates = {}
@@ -20,7 +36,23 @@ def obtain_growth_rates(dataframe):
     return growth_rates
 
 
-def bar_plot_annual_renewable_rates(dataframe):
+def bar_plot_annual_renewable_rates(dataframe: pd.DataFrame):
+    """
+    Generates a bar plot showing the average annual growth rates of renewable energy consumption for each continent.
+
+    Parameters
+    ----------
+    dataframe : pd.DataFrame
+        A pandas DataFrame containing data on renewable energy consumption, with a column named 'Entity' 
+        specifying the continents and a column named 'Renewables (% equivalent primary energy)' containing 
+        the percentage of renewable energy consumption.
+
+    Returns
+    -------
+    plotly.graph_objs._figure.Figure
+        A Plotly figure object representing the bar plot showing the average annual growth rates of renewable 
+        energy consumption for each continent.
+    """
     fig_bar = go.Figure()
 
     growth_rates = obtain_growth_rates(dataframe)
@@ -43,7 +75,26 @@ def bar_plot_annual_renewable_rates(dataframe):
     return fig_bar
 
 
-def plot_lineplot(entities, dataframe):
+def plot_lineplot(entities: Union[list, str], dataframe: pd.DataFrame):
+    """
+    Generates a line plot showing the trend of renewable energy consumption over time for specified entities.
+
+    Parameters
+    ----------
+    entities : Union[list, str]
+        A list of entity names or a single entity name for which the renewable energy consumption trend over 
+        time will be plotted.
+    dataframe : pd.DataFrame
+        A pandas DataFrame containing data on renewable energy consumption, with columns including 'Year' 
+        and 'Entity' specifying the year and entity (e.g., continent) respectively, and a column named 
+        'Renewables (% equivalent primary energy)' containing the percentage of renewable energy consumption.
+
+    Returns
+    -------
+    plotly.graph_objs._figure.Figure
+        A Plotly figure object representing the line plot showing the trend of renewable energy consumption 
+        over time for the specified entities.
+    """
     if not isinstance(entities, list):
         entities = [entities]
     data_copy = dataframe.copy()
@@ -61,8 +112,29 @@ def plot_lineplot(entities, dataframe):
     return lineplot
 
 
-def get_pivot_table(dataframe, value):
-    latest_n_years = dataframe['Year'].unique()[-value:]
+def get_pivot_table(dataframe: pd.DataFrame, year: int) -> pd.DataFrame:
+    """
+    Generates a pivot table showing the top 20 countries with the highest renewable energy consumption 
+    percentage for the latest n years.
+
+    Parameters
+    ----------
+    dataframe : pd.DataFrame
+        A pandas DataFrame containing data on renewable energy consumption, with columns including 'Year', 
+        'Entity', and 'Renewables (% equivalent primary energy)' specifying the year, entity (e.g., country), 
+        and the percentage of renewable energy consumption respectively.
+    year : int
+        The number of latest years to consider for generating the pivot table.
+
+    Returns
+    -------
+    pd.DataFrame
+        A pandas DataFrame representing the pivot table where rows correspond to countries, columns correspond 
+        to years, and cell values represent the percentage of renewable energy consumption for each country 
+        in each year. The DataFrame is sorted based on the countries with the highest cumulative renewable 
+        energy consumption percentage across all the years.
+    """
+    latest_n_years = dataframe['Year'].unique()[-year:]
     filtered_data = dataframe[dataframe['Year'].isin(latest_n_years)]
     top_20_per_year = filtered_data.groupby('Year').apply(
         lambda x: x.nlargest(20, 'Renewables (% equivalent primary energy)'))
@@ -79,7 +151,26 @@ def get_pivot_table(dataframe, value):
     return sorted_pivot_data
 
 
-def plot_barplot(value, dataframe):
+def plot_barplot(value: int, dataframe: pd.DataFrame):
+    """
+    Generates a stacked bar plot showing the renewable energy consumption percentage for the top 20 entities 
+    (e.g., countries) over the specified number of latest years.
+
+    Parameters
+    ----------
+    value : int
+        The number of latest years to consider for generating the stacked bar plot.
+    dataframe : pd.DataFrame
+        A pandas DataFrame containing data on renewable energy consumption, with columns including 'Year', 
+        'Entity', and 'Renewables (% equivalent primary energy)' specifying the year, entity (e.g., country), 
+        and the percentage of renewable energy consumption respectively.
+
+    Returns
+    -------
+    plotly.graph_objs._figure.Figure
+        A Plotly figure object representing the stacked bar plot showing the renewable energy consumption 
+        percentage for the top 20 entities over the specified number of latest years.
+    """
 
     sorted_pivot_data = get_pivot_table(dataframe, value)
     barplot = px.bar(sorted_pivot_data, barmode='stack',
@@ -97,7 +188,27 @@ def plot_barplot(value, dataframe):
     return barplot
 
 
-def lowest_renewable_share(value, dataframe):
+def lowest_renewable_share(value: int, dataframe: pd.DataFrame):
+    """
+    Retrieves the countries with the lowest renewable energy consumption percentage for the latest n years.
+
+    Parameters
+    ----------
+    value : int
+        The number of latest years to consider for retrieving the countries with the lowest renewable energy 
+        consumption percentage.
+    dataframe : pd.DataFrame
+        A pandas DataFrame containing data on renewable energy consumption, with columns including 'Year', 
+        'Entity', and 'Renewables (% equivalent primary energy)' specifying the year, entity (e.g., country), 
+        and the percentage of renewable energy consumption respectively.
+
+    Returns
+    -------
+    pd.DataFrame, numpy.ndarray
+        A pandas DataFrame representing the countries with the lowest renewable energy consumption percentage 
+        for each year in the specified range. The DataFrame has countries as index and years as columns.
+        A numpy array containing the latest n years considered for retrieving the data.
+    """
     latest_n_years = dataframe['Year'].unique()[-value:]
 
     heatmap_data = pd.DataFrame()
@@ -111,7 +222,26 @@ def lowest_renewable_share(value, dataframe):
     return heatmap_data, latest_n_years
 
 
-def plot_heatmap(value, dataframe):
+def plot_heatmap(value: int, dataframe: pd.DataFrame):
+    """
+    Generates a heatmap showing the renewable energy consumption percentage for the bottom 10 countries/regions 
+    over the latest n years.
+
+    Parameters
+    ----------
+    value : int
+        The number of latest years to consider for generating the heatmap.
+    dataframe : pd.DataFrame
+        A pandas DataFrame containing data on renewable energy consumption, with columns including 'Year', 
+        'Entity', and 'Renewables (% equivalent primary energy)' specifying the year, entity (e.g., country), 
+        and the percentage of renewable energy consumption respectively.
+
+    Returns
+    -------
+    plotly.graph_objs._figure.Figure
+        A Plotly figure object representing the heatmap showing the renewable energy consumption percentage 
+        for the bottom 10 countries/regions over the latest n years.
+    """
     heatmap_data, latest_n_years = lowest_renewable_share(value, dataframe)
     heatmap_fig = go.Figure(data=go.Heatmap(
         z=heatmap_data.values.tolist(),
@@ -135,7 +265,25 @@ def plot_heatmap(value, dataframe):
     return heatmap_fig
 
 
-def plot_scatterplot(entity, dataframe):
+def plot_scatterplot(entity: str, dataframe: pd.DataFrame):
+    """
+    Generates a scatter plot showing the trend of renewable energy usage rate in the specified entity (e.g., country) over the years.
+
+    Parameters
+    ----------
+    entity : str
+        The name of the entity (e.g., country) for which the renewable energy usage rate trend will be plotted.
+    dataframe : pd.DataFrame
+        A pandas DataFrame containing data on renewable energy consumption, with columns including 'Year', 
+        'Entity', and 'Renewables (% electricity)' specifying the year, entity, and the percentage of 
+        renewable energy usage rate respectively.
+
+    Returns
+    -------
+    plotly.graph_objs._figure.Figure
+        A Plotly figure object representing the scatter plot showing the trend of renewable energy usage rate 
+        in the specified entity over the years.
+    """
     entity_data = dataframe[dataframe['Entity'] == entity]
 
     fig_scatter = go.Figure(go.Scatter(
@@ -171,7 +319,23 @@ def plot_scatterplot(entity, dataframe):
     return fig_scatter
 
 
-def scatterplot_multiple(dataframes):
+def scatterplot_multiple(dataframes: pd.DataFrame):
+    """
+    Generates a scatter plot showing the trend of renewable energy usage rates for multiple countries over the years.
+
+    Parameters
+    ----------
+    dataframes : pd.DataFrame
+        A pandas DataFrame containing data on renewable energy consumption for multiple countries, with columns 
+        including 'Year', 'Entity', and 'Renewables (% electricity)' specifying the year, entity (e.g., country), 
+        and the percentage of renewable energy usage rate respectively.
+
+    Returns
+    -------
+    plotly.graph_objs._figure.Figure
+        A Plotly figure object representing the scatter plot showing the trend of renewable energy usage rates 
+        for multiple countries over the years.
+    """
     interest_countries = ['Germany', 'France', 'United Kingdom', 'Denmark', 'Spain', 'Mexico']
 
     selected_data = dataframes[dataframes['Entity'].isin(interest_countries)]
@@ -198,7 +362,23 @@ def scatterplot_multiple(dataframes):
     return fig_scatter
 
 
-def map_plot(dataframe):
+def map_plot(dataframe: pd.DataFrame):
+    """
+    Generates a choropleth map showing the worldwide distribution of renewable energy usage percentage over the years.
+
+    Parameters
+    ----------
+    dataframe : pd.DataFrame
+        A pandas DataFrame containing data on renewable energy consumption for multiple countries, with columns 
+        including 'Year', 'Entity', and 'Renewables (% electricity)' specifying the year, entity (e.g., country), 
+        and the percentage of renewable energy usage rate respectively.
+
+    Returns
+    -------
+    plotly.graph_objs._figure.Figure
+        A Plotly figure object representing the choropleth map showing the worldwide distribution of renewable 
+        energy usage percentage over the years.
+    """
     sorted_dataframe = dataframe.sort_values('Year')
     fig = px.choropleth(
         sorted_dataframe,

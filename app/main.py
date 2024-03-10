@@ -1,16 +1,14 @@
-from params import *
+
 import pandas as pd
-import plotly.express as px
-
-
+# Dash libraries
 import dash
 from dash import dcc
 from dash import html
 import dash_bootstrap_components as dbc
 from dash.dependencies import Input, Output
 from dash import dcc, html, Input, Output
-import dash
 
+# utils module
 from utils_dashboard import bar_plot_annual_renewable_rates as bar_plot_annual_renewable_rates_db
 from utils_dashboard import plot_lineplot as plot_lineplot_db
 from utils_dashboard import plot_barplot as plot_barplot_db
@@ -19,15 +17,17 @@ from utils_dashboard import plot_scatterplot as plot_scatterplot_db
 from utils_dashboard import scatterplot_multiple as scatterplot_multiple_db
 from utils_dashboard import map_plot as map_plot_db
 
+from params import *
 
+# leemos los datos como DataFrame
 renewable_share_energy = pd.read_csv("../data/01 renewable-share-energy.csv")
 share_electricity_renewables = pd.read_csv("../data/04 share-electricity-renewables.csv")
 
-
+# obtenemos las entidades disponibles
 renewable_share_energy['Entity'].unique()
 ENTITIES = list(renewable_share_energy['Entity'].unique())
 
-
+# creamos una nueva aplicación Dash
 dash_app = dash.Dash(name=__name__,
                      title='Images & Video Dashboard',
                      external_stylesheets=[dbc.themes.BOOTSTRAP],
@@ -58,9 +58,9 @@ dash_app.layout = html.Div([
     dbc.Container([
         html.Hr(),
         dbc.Tabs([
-            dbc.Tab(label="Gráfico de Líneas", tab_id="line-plot-tab"),
-            dbc.Tab(label="Gráfico de Barras", tab_id="bar-plot-tab"),
-            dbc.Tab(label="Gráfico de Barras", tab_id="map-plot"),
+            dbc.Tab(label="Primer-analisis", tab_id="line-plot-tab"),
+            dbc.Tab(label="Segundo-analisis", tab_id="bar-plot-tab"),
+            dbc.Tab(label="Tercer-analisis", tab_id="map-plot"),
         ], id="tabs", active_tab="line-plot-tab"),
         html.Div(id="tabs-content")
     ])
@@ -106,13 +106,16 @@ def render_tab_content(active_tab):
 
             dbc.Row([
                 dbc.Col(
-                    html.Div([
-                        dcc.Graph(id='heatmap-plot'),
-                        dcc.Slider(0, 20, 5,
-                                   value=6,
-                                   id='slider-heatmap'),
-                        html.Div(id='slider-output-container-heatmap')
-                    ])
+                    html.Div([html.H4(''),
+                              html.P(
+                                  "México: La composición de la matriz energética en México revela una posible inclinación hacia fuentes de energía renovable, especialmente la hidroeléctrica."),
+                              html.P("Mundo (World): La gráfica muestra el cambio porcentual en la participación global de energías renovables entre 1965 y 2021, destacando el aumento significativo en tiempos recientes y su importancia en la lucha contra el cambio climático."),
+                              dcc.Graph(id='heatmap-plot'),
+                              dcc.Slider(0, 20, 5,
+                                         value=6,
+                                         id='slider-heatmap'),
+                              html.Div(id='slider-output-container-heatmap')
+                              ])
 
 
                 )
@@ -123,9 +126,9 @@ def render_tab_content(active_tab):
             dbc.Row([
                 dbc.Col(
                     html.Div([
-                        html.H2('Información General'),
-                        html.P("Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed accumsan libero sit amet purus eleifend, id ullamcorper eros vehicula. Nam at augue consequat, tempus velit vitae, commodo arcu. Aliquam erat volutpat. Integer interdum nibh non felis tristique, ut vulputate nulla laoreet. Mauris ultrices ligula id arcu commodo, non euismod enim accumsan. Duis vitae ligula ut justo malesuada gravida. Maecenas dapibus ipsum sed magna convallis, eget finibus odio fermentum. Quisque tincidunt, risus id fermentum venenatis, libero ex suscipit nisi, ut varius est nisl vel sem. Aenean sed semper risus. Vivamus sed arcu vitae ex pellentesque ultrices a non velit. Integer auctor, quam in commodo scelerisque, purus lectus egestas nulla, vel suscipit nisi sem nec elit. Suspendisse potenti. Sed in risus nec mauris vehicula faucibus. Etiam nec purus pretium, accumsan orci eu, dictum orci. Sed gravida eget nisi nec congue."),
-                    ], style={'background-color': '#65bdd0', 'color': 'white', 'border-radius': '5px', 'padding': '10px', 'margin': '20px'})
+                        html.H4(''),
+                        html.P("Este tipo de visualización puede ser beneficiosa para formuladores de políticas, investigadores e inversores, ayudándoles a identificar qué países necesitan apoyo o inversión en el ámbito de la energía renovable."),
+                    ])
                 )
             ], align="center", style={'padding-left': '30px', 'padding-right': '30px'})
 
@@ -137,24 +140,26 @@ def render_tab_content(active_tab):
 
             dbc.Row([
                 dbc.Col(
-                    html.Div([
-                        dcc.Graph(id='bar-plot'),
-                        dcc.Slider(0, 20, 5,
-                                   value=10,
-                                   id='my-slider'),
-                        html.Div(id='slider-output-container')
-                    ]))
+                    html.Div([html.H4(''),
+                              html.P("Estos gráficos ayudan a comprender cómo está cambiando la energía renovable a nivel global y qué países/regiones están liderando en este campo, siendo útiles para gobiernos, formuladores de políticas e inversores."),
+                              dcc.Graph(id='bar-plot'),
+                              dcc.Slider(0, 20, 5,
+                                         value=10,
+                                         id='my-slider'),
+                              html.Div(id='slider-output-container')
+                              ]))
             ], align="center", style={'padding-left': '30px', 'padding-right': '30px'}),
 
             html.Hr(),
 
             dbc.Row([
                 dbc.Col(
-                    html.Div([
-                        dcc.Interval(
-                            id='interval-component',
-                            interval=60*1000,  # en milisegundos
-                            n_intervals=0),
+                    html.Div([html.H4(''),
+                              html.P("Ofrece una perspectiva global esencial para comprender el progreso y las disparidades en el uso de energía renovable en todo el mundo, siendo útil para analizar las tendencias globales de energía renovable."),
+                              dcc.Interval(
+                        id='interval-component',
+                        interval=60*1000,  # en milisegundos
+                        n_intervals=0),
                         html.Div(id='bar-plot-annual-rates')
                     ])
                 )
@@ -194,11 +199,12 @@ def render_tab_content(active_tab):
 
             dbc.Row([
                 dbc.Col(
-                    html.Div([
-                        dcc.Interval(
-                            id='interval-component-2',
-                            interval=60*1000,  # en milisegundos
-                            n_intervals=0),
+                    html.Div([html.H4(''),
+                              html.P("Proporciona una clara representación visual de cómo los países han adoptado la energía renovable con el tiempo, siendo útil para comprender las políticas de energía renovable y las diferencias entre países."),
+                              dcc.Interval(
+                        id='interval-component-2',
+                        interval=60*1000,  # en milisegundos
+                        n_intervals=0),
                         html.Div(id='scatter-plot-line')
                     ])
                 )
@@ -207,11 +213,12 @@ def render_tab_content(active_tab):
 
             dbc.Row([
                 dbc.Col(
-                    html.Div([
-                        dcc.Interval(
-                            id='interval-component-3',
-                            interval=60*1000,  # en milisegundos
-                            n_intervals=0),
+                    html.Div([html.H4(''),
+                              html.P("Sirve como una herramienta valiosa para hacer comparaciones entre regiones, identificando cuáles lideran en el campo de la energía renovable y cuáles necesitan un desarrollo adicional."),
+                              dcc.Interval(
+                        id='interval-component-3',
+                        interval=60*1000,  # en milisegundos
+                        n_intervals=0),
                         html.Div(id='map-plots')
                     ])
                 )
